@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>فروش سی‌پی کالاف دیوتی - Shkouh</title>
+    <style>
+        body {
+            font-family: 'Vazir', sans-serif;
+            direction: rtl;
+            background: #121212;
+            color: #f1f1f1;
+            padding: 1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            color: #00ff88;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            padding: 0.5rem;
+            border-bottom: 2px solid #00ff88;
+        }
+
+        .section {
+            background: #1c1c1c;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            border: 1px solid #2a2a2a;
+        }
+
+        input, select, button, textarea {
+            width: 100%;
+            padding: 0.8rem;
+            margin: 0.5rem 0;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: none;
+            box-sizing: border-box;
+            transition: all 0.3s;
+        }
+
+        input, select, textarea {
+            background: #1e1e1e;
+            color: white;
+            border: 1px solid #333;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #00ff88;
+            box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.2);
+        }
+
+        button {
+            background: #00c767;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            background: #00a355;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .cp-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 0.8rem;
+            margin: 1.5rem 0;
+        }
+
+        .cp-option {
+            background: #222;
+            border: 2px solid #00c767;
+            color: #00ff88;
+            padding: 0.8rem 0.5rem;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .cp-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0, 199, 103, 0.3);
+        }
+
+        .cp-option.active {
+            background: #00c767;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 199, 103, 0.4);
+        }
+
+        .price-display {
+            background: #1e1e1e;
+            padding: 1.2rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            text-align: center;
+            border: 1px dashed #00ff88;
+        }
+
+        .price-amount {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #00ff88;
+            margin: 0.5rem 0;
+        }
+
+        .order-result {
+            background: #2a2a2a;
+            padding: 1.2rem;
+            margin-top: 1rem;
+            border-radius: 8px;
+            border: 1px solid #00ff88;
+            animation: fadeIn 0.5s;
+        }
+
+        .confirmation-page {
+            display: none;
+            background: #1c1c1c;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .order-details {
+            background: #2a2a2a;
+            padding: 1.2rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border: 1px solid #00ff88;
+        }
+
+        .order-detail {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid #333;
+        }
+
+        .order-detail:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .payment-info {
+            background: #2a2a2a;
+            padding: 1.2rem;
+            border-radius: 8px;
+            border: 1px solid #ffc107;
+            margin-bottom: 1.5rem;
+        }
+
+        .payment-info h3 {
+            color: #ffc107;
+            margin-top: 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .status-pending {
+            color: #FF9800;
+            font-weight: bold;
+        }
+
+        .status-done {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        #supportBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #25D366;
+            color: white;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 1.8rem;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.5);
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        #supportBtn:hover {
+            transform: scale(1.1);
+        }
+
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+            max-width: 400px;
+        }
+
+        .alert-success {
+            background: #4CAF50;
+            border-left: 5px solid #388E3C;
+        }
+
+        .alert-error {
+            background: #f44336;
+            border-left: 5px solid #d32f2f;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 0.5rem;
+            }
+
+            .section {
+                padding: 1rem;
+            }
+
+            .cp-grid {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+                gap: 0.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="orderForm" class="section">
+        <h2>🛒 ثبت سفارش سی‌پی</h2>
+
+        <input id="buyerName" placeholder="نام خریدار" required>
+        <input id="phone" placeholder="شماره موبایل (مثال: 09123456789)" required pattern="09\d{9}">
+        <input id="email" placeholder="ایمیل اکانت" type="email" required>
+        <input id="password" placeholder="رمز عبور اکانت" required>
+        <input id="accountName" placeholder="نام اکانت در بازی" required>
+
+        <select id="platform" required>
+            <option value="" disabled selected>انتخاب پلتفرم</option>
+            <option value="اکتیویژن">اکتیویژن</option>
+            <option value="فیس بوک">فیس بوک</option>
+        </select>
+
+        <div class="price-display">
+            <div>مقدار انتخاب شده:</div>
+            <div id="selectedCPValue" style="font-size: 1.2rem; margin: 0.5rem 0;">---</div>
+            <div>قیمت:</div>
+            <div class="price-amount" id="priceValue">0 تومان</div>
+        </div>
+
+        <div class="cp-grid">
+            <div class="cp-option" data-cp="80">80 CP</div>
+            <div class="cp-option" data-cp="160">160 CP</div>
+            <div class="cp-option" data-cp="240">240 CP</div>
+            <div class="cp-option" data-cp="320">320 CP</div>
+            <div class="cp-option" data-cp="420">420 CP</div>
+            <div class="cp-option" data-cp="500">500 CP</div>
+            <div class="cp-option" data-cp="580">580 CP</div>
+            <div class="cp-option" data-cp="660">660 CP</div>
+            <div class="cp-option" data-cp="740">740 CP</div>
+            <div class="cp-option" data-cp="880">880 CP</div>
+            <div class="cp-option" data-cp="960">960 CP</div>
+            <div class="cp-option" data-cp="1040">1040 CP</div>
+            <div class="cp-option" data-cp="1300">1300 CP</div>
+            <div class="cp-option" data-cp="2400">2400 CP</div>
+            <div class="cp-option" data-cp="5000">5000 CP</div>
+            <div class="cp-option" data-cp="10800">10800 CP</div>
+        </div>
+
+        <button id="continueBtn" onclick="showConfirmation()" disabled>➡️ ادامه خرید</button>
+    </div>
+
+    <div id="confirmationPage" class="confirmation-page">
+        <h2>🔍 تأیید سفارش</h2>
+
+        <div class="order-details">
+            <div class="order-detail">
+                <span class="detail-label">نام خریدار:</span>
+                <span id="confirmName"></span>
+            </div>
+            <div class="order-detail">
+                <span class="detail-label">شماره موبایل:</span>
+                <span id="confirmPhone"></span>
+            </div>
+            <div class="order-detail">
+                <span class="detail-label">ایمیل اکانت:</span>
+                <span id="confirmEmail"></span>
+            </div>
+            <div class="order-detail">
+                <span class="detail-label">نام اکانت در بازی:</span>
+                <span id="confirmAccount"></span>
+            </div>
+            <div class="order-detail">
+                <span class="detail-label">پلتفرم:</span>
+                <span id="confirmPlatform"></span>
+            </div>
+            <div class="order-detail">
+                <span class="detail-label">مقدار CP:</span>
+                <span id="confirmCP"></span>
+            </div>
+            <div class="order-detail">
+                <span class="detail-label">قیمت:</span>
+                <span id="confirmPrice" style="font-weight: bold; color: #00ff88;"></span>
+            </div>
+        </div>
+
+        <div class="payment-info">
+            <h3>💳 اطلاعات پرداخت</h3>
+            <p>لطفاً مبلغ <span id="paymentAmount" style="font-weight: bold;"></span> تومان را به شماره کارت زیر واریز کنید:</p>
+            <p style="text-align: center; font-size: 1.2rem; background: #333; padding: 0.8rem; border-radius: 8px; direction: ltr;">
+                <strong>6219 8619 5311 0769</strong>
+                <div style="text-align: center; margin-top: 0.5rem;">به نام: محمد حسن شکوه</div>
+            </p>
+            <p>پس از پرداخت، تصویر رسید را در قسمت زیر آپلود کنید:</p>
+
+            <textarea id="receiptInfo" placeholder="توضیحات رسید پرداخت (مثال: شماره پیگیری، تاریخ پرداخت و ...)"></textarea>
+            <input type="file" id="receiptImage" accept="image/*">
+
+            <p style="margin-top: 1rem;">یا می‌توانید تصویر رسید را به شماره <strong>09172422865</strong> در واتساپ ارسال کنید.</p>
+        </div>
+
+        <button onclick="submitOrder()">✅ ثبت نهایی سفارش</button>
+        <button onclick="backToForm()" style="background: #555; margin-top: 0.5rem;">↩️ بازگشت به ویرایش</button>
+    </div>
+
+    <div class="section">
+        <h2>🔎 پیگیری سفارش</h2>
+        <input id="trackCode" placeholder="کد پیگیری خود را وارد کنید" required>
+        <button onclick="trackOrders()">📦 مشاهده سفارش</button>
+        <div id="trackResult"></div>
+    </div>
+
+    <a id="supportBtn" href="https://wa.me/989172422865" target="_blank">💬</a>
+
+    <script>
+        // قیمت‌ها از سایت موجوجم با 10% سود اضافه
+        const prices = {
+            80: 95000,    // 83900 + 9%
+            160: 168000,   // 167800 + 9%
+            240: 255000,   // 251700 + 9%
+            320: 332000,   // 335600 + 9%
+            420: 405000,   // 440550 + 9%
+            500: 490000,   // 524500 + 9%
+            580: 560000,   // 608450 + 9%
+            660: 640000,   // 692400 + 9%
+            740: 720000,   // 776350 + 9%
+            880: 800000,  // 923600 + 9%
+            960: 890000,  // 1007400 + 9%
+            1040: 970000, // 1091200 + 9%
+            1300: 1250000, // 1363700 + 9%
+            2400: 2200000, // 2517000 + 9%
+            5000: 4200000,  // 5245000 + 9%
+            10800: 7900000 // 11329200 + 9%
+        };
+
+        let selectedCP = null;
+        let currentOrder = {};
+
+        // انتخاب مقدار CP
+        document.querySelectorAll('.cp-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const cpValue = parseInt(this.getAttribute('data-cp'));
+
+                // اگر همین گزینه قبلاً انتخاب شده بود
+                if (selectedCP === cpValue) {
+                    selectedCP = null;
+                    this.classList.remove('active');
+                    document.getElementById('continueBtn').disabled = true;
+                    document.getElementById('selectedCPValue').textContent = '---';
+                    document.getElementById('priceValue').textContent = '0 تومان';
+                    return;
+                }
+
+                // برداشتن انتخاب قبلی
+                if (selectedCP !== null) {
+                    document.querySelector(`.cp-option[data-cp="${selectedCP}"]`).classList.remove('active');
+                }
+
+                // انتخاب جدید
+                selectedCP = cpValue;
+                this.classList.add('active');
+                document.getElementById('continueBtn').disabled = false;
+                document.getElementById('selectedCPValue').textContent = `${cpValue} CP`;
+                document.getElementById('priceValue').textContent = `${prices[cpValue].toLocaleString()} تومان`;
+            });
+        });
+
+        // نمایش صفحه تأیید سفارش
+        function showConfirmation() {
+            // اعتبارسنجی فیلدها
+            const requiredFields = ['buyerName', 'phone', 'email', 'password', 'accountName', 'platform'];
+            const emptyFields = [];
+
+            requiredFields.forEach(field => {
+                const element = document.getElementById(field);
+                if (!element.value.trim()) {
+                    emptyFields.push(field);
+                    element.style.borderColor = '#f44336';
+                } else {
+                    element.style.borderColor = '';
+                }
+            });
+
+            if (emptyFields.length > 0) {
+                showAlert('لطفاً همه فیلدهای ضروری را پر کنید', 'error');
+                return;
+            }
+
+            // اعتبارسنجی شماره تلفن
+            const phone = document.getElementById('phone').value.trim();
+            if (!/^09\d{9}$/.test(phone)) {
+                showAlert('شماره موبایل معتبر نیست (مثال: 09123456789)', 'error');
+                document.getElementById('phone').style.borderColor = '#f44336';
+                return;
+            }
+
+            // اعتبارسنجی ایمیل
+            const email = document.getElementById('email').value.trim();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showAlert('لطفاً یک ایمیل معتبر وارد کنید', 'error');
+                document.getElementById('email').style.borderColor = '#f44336';
+                return;
+            }
+
+            // ذخیره اطلاعات سفارش
+            currentOrder = {
+                buyerName: document.getElementById('buyerName').value.trim(),
+                phone: phone,
+                email: email,
+                password: document.getElementById('password').value.trim(),
+                accountName: document.getElementById('accountName').value.trim(),
+                platform: document.getElementById('platform').value,
+                cpAmount: selectedCP,
+                price: prices[selectedCP]
+            };
+
+            // پر کردن اطلاعات در صفحه تأیید
+            document.getElementById('confirmName').textContent = currentOrder.buyerName;
+            document.getElementById('confirmPhone').textContent = currentOrder.phone;
+            document.getElementById('confirmEmail').textContent = currentOrder.email;
+            document.getElementById('confirmAccount').textContent = currentOrder.accountName;
+            document.getElementById('confirmPlatform').textContent = currentOrder.platform;
+            document.getElementById('confirmCP').textContent = `${currentOrder.cpAmount} CP`;
+            document.getElementById('confirmPrice').textContent = `${currentOrder.price.toLocaleString()} تومان`;
+            document.getElementById('paymentAmount').textContent = currentOrder.price.toLocaleString();
+
+            // نمایش صفحه تأیید
+            document.getElementById('orderForm').style.display = 'none';
+            document.getElementById('confirmationPage').style.display = 'block';
+        }
+
+        // بازگشت به فرم سفارش
+        function backToForm() {
+            document.getElementById('confirmationPage').style.display = 'none';
+            document.getElementById('orderForm').style.display = 'block';
+        }
+
+        // ثبت نهایی سفارش
+        function submitOrder() {
+            // دریافت اطلاعات رسید پرداخت
+            const receiptInfo = document.getElementById('receiptInfo').value.trim();
+            const receiptImage = document.getElementById('receiptImage').files[0];
+
+            // ایجاد سفارش نهایی
+            const order = {
+                ...currentOrder,
+                done: false,
+                trackCode: generateTrackCode(),
+                date: new Date().toLocaleString('fa-IR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                }),
+                receiptInfo: receiptInfo,
+                receiptImage: receiptImage ? receiptImage.name : null
+            };
+
+            // ذخیره سفارش
+            let orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            orders.push(order);
+            localStorage.setItem('orders', JSON.stringify(orders));
+
+            // نمایش پیام موفقیت
+            showAlert(
+                `✅ سفارش با موفقیت ثبت شد<br><br>
+                کد پیگیری: <strong>${order.trackCode}</strong><br>
+                مبلغ قابل پرداخت: <strong>${order.price.toLocaleString()} تومان</strong><br><br>
+                لطفاً رسید پرداخت را ارسال کنید.`,
+                'success',
+                8000
+            );
+
+            // بازگشت به صفحه اول و ریست فرم
+            document.getElementById('confirmationPage').style.display = 'none';
+            document.getElementById('orderForm').style.display = 'block';
+            resetForm();
+        }
+
+        // پیگیری سفارش فقط با کد پیگیری
+        function trackOrders() {
+            const trackCode = document.getElementById('trackCode').value.trim();
+
+            if (!trackCode) {
+                showAlert('لطفاً کد پیگیری را وارد کنید', 'error');
+                document.getElementById('trackCode').style.borderColor = '#f44336';
+                return;
+            }
+
+            document.getElementById('trackCode').style.borderColor = '';
+
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            const order = orders.find(o => o.trackCode === trackCode);
+            const resultContainer = document.getElementById('trackResult');
+            resultContainer.innerHTML = '';
+
+            if (!order) {
+                resultContainer.innerHTML = `
+                    <div class="order-result">
+                        <p style="text-align: center; color: #ff5252;">
+                            ❌ سفارشی با این کد پیگیری یافت نشد
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            const orderDiv = document.createElement('div');
+            orderDiv.className = 'order-result';
+            orderDiv.innerHTML = `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem;">
+                    <div>
+                        <strong>${order.buyerName}</strong>
+                        <div style="font-size: 0.9rem; color: #aaa; margin-top: 0.3rem;">
+                            ${order.date}
+                        </div>
+                    </div>
+                    <div>
+                        <strong>کد پیگیری: ${order.trackCode}</strong>
+                    </div>
+                </div>
+
+                <hr style="border-color: #333; margin: 0.8rem 0;">
+
+                <div style="margin-bottom: 0.8rem;">
+                    <div>📧 ${order.email}</div>
+                    <div>🎮 ${order.accountName} (${order.platform})</div>
+                    <div>🎁 ${order.cpAmount} CP</div>
+                    <div>💰 ${order.price.toLocaleString()} تومان</div>
+                </div>
+
+                <div style="text-align: center; margin-top: 1rem;">
+                    وضعیت: <span class="${order.done ? 'status-done' : 'status-pending'}">
+                        ${order.done ? 'انجام شده ✅' : 'در انتظار انجام ⏳'}
+                    </span>
+                </div>
+            `;
+            resultContainer.appendChild(orderDiv);
+        }
+
+        // تولید کد پیگیری
+        function generateTrackCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let result = '';
+            for (let i = 0; i < 6; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        // نمایش اعلان
+        function showAlert(message, type = 'info', duration = 5000) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = message;
+            document.body.appendChild(alertDiv);
+
+            setTimeout(() => {
+                alertDiv.style.animation = 'fadeOut 0.3s';
+                setTimeout(() => {
+                    document.body.removeChild(alertDiv);
+                }, 300);
+            }, duration);
+        }
+
+        // ریست فرم
+        function resetForm() {
+            document.getElementById('buyerName').value = '';
+            document.getElementById('phone').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('accountName').value = '';
+            document.getElementById('platform').selectedIndex = 0;
+            document.getElementById('trackCode').value = '';
+            document.getElementById('receiptInfo').value = '';
+            document.getElementById('receiptImage').value = '';
+
+            if (selectedCP !== null) {
+                document.querySelector(`.cp-option[data-cp="${selectedCP}"]`).classList.remove('active');
+                selectedCP = null;
+            }
+
+            document.getElementById('continueBtn').disabled = true;
+            document.getElementById('selectedCPValue').textContent = '---';
+            document.getElementById('priceValue').textContent = '0 تومان';
+        }
+
+        // اعتبارسنجی شماره تلفن
+        document.getElementById('phone').addEventListener('input', function() {
+            this.value = this.value.replace(/[^\d]/g, '');
+        });
+    </script>
+
+</body>
+</html>
