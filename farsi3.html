@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>بازی شعرسازی + معنی لغات (چهارگزینه‌ای)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root{
+      --bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;
+      --accent:#22d3ee;--accent2:#8b5cf6;--good:#22c55e;--bad:#ef4444;--warn:#f59e0b;
+      --chip:#1f2937;--chip-hover:#334155;--slot:#0b1220;--border:#1f2937;--overlay:rgba(2,6,23,.6);
+    }
+    html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,"IRANSans",Tahoma,Arial}
+    .container{max-width:980px;margin:0 auto;padding:20px}
+    .titlebar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 14px}
+    .titlebar h1{margin:0;font-size:20px}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    .tab-btn{background:#0b1220;border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:10px;cursor:pointer;transition:.15s}
+    .tab-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:#fff}
+    .panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .muted{color:var(--muted)}
+    .hint{font-size:12px;color:var(--muted)}
+    .btn{background:#0b1220;border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:10px;cursor:pointer;transition:.15s}
+    .btn:hover{border-color:#2a3346}
+    .btn.primary{background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);border-color:transparent;color:#fff}
+    .btn.ghost{background:transparent}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .divider{height:1px;background:var(--border);margin:12px 0}
+    .tiles,.slots{display:flex;gap:8px;flex-wrap:wrap;align-items:center;min-height:48px}
+    .tile{background:var(--chip);border:1px solid #263145;color:#e2e8f0;padding:8px 10px;border-radius:10px;cursor:pointer;transition:.15s;font-size:15px}
+    .tile:hover{background:var(--chip-hover)}
+    .tile.used{opacity:.5;cursor:not-allowed}
+    .slot{min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;background:var(--slot);border:1px dashed #263145;border-radius:10px;color:#fff;padding:6px 10px}
+    .status{margin-top:8px}
+    .status.good{color:var(--good)}
+    .status.bad{color:var(--bad)}
+    .status.warn{color:var(--warn)}
+    .topbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .lives{display:flex;gap:6px;align-items:center}
+    .heart{width:18px;height:18px;border-radius:4px;border:1px solid #2a3346;background:#203048}
+    .heart.full{background:linear-gradient(135deg,#ef4444,#f59e0b)}
+    .header-line{font-weight:600;margin-bottom:8px}
+    .controls{display:flex;gap:8px;flex-wrap:wrap}
+    .footer{margin-top:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+    .small{font-size:12px}
+
+    /* Vocab */
+    .qbox{background:#0b1220;border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px}
+    .choices{display:grid;grid-template-columns:1fr;gap:8px}
+    @media (min-width:640px){.choices{grid-template-columns:1fr 1fr}}
+    .choice{background:#0b1220;border:1px solid #263145;color:#e2e8f0;padding:10px;border-radius:10px;cursor:pointer;text-align:right}
+    .choice.correct{border-color:#137a4d;background:rgba(34,197,94,.1)}
+    .choice.wrong{border-color:#7a1322;background:rgba(239,68,68,.1)}
+    .score{font-weight:600}
+
+    /* Sidebar + Drawer */
+    .side-actions{position:fixed;top:50%;right:16px;transform:translateY(-50%);z-index:50}
+    .fab{width:52px;height:52px;border-radius:14px;border:1px solid var(--border);background:#0b1220;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+    .fab:hover{border-color:#2a3346}
+    .fab .icon{font-size:24px;line-height:1}
+    .drawer-overlay{position:fixed;top:0;right:0;bottom:0;left:0;background:var(--overlay);display:none;z-index:60}
+    .drawer{position:fixed;top:0;right:0;bottom:0;width:min(480px,92vw);background:var(--panel);border-left:1px solid var(--border);box-shadow:-16px 0 40px rgba(0,0,0,.35);transform:translateX(100%);transition:.2s;z-index:61;display:flex;flex-direction:column}
+    .drawer.open{transform:translateX(0)}
+    .drawer-header{padding:14px 14px 8px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+    .drawer-body{padding:14px;display:grid;gap:12px;overflow:auto}
+    .field{display:grid;gap:6px}
+    .field label{font-size:12px;color:var(--muted)}
+    input[type="text"],textarea{background:#0b1220;border:1px solid var(--border);color:#e5e7eb;padding:10px 12px;border-radius:10px;outline:none;width:100%}
+    .segmented{display:flex;gap:8px}
+    .segmented .seg{flex:1;text-align:center;padding:8px 10px;border:1px solid var(--border);border-radius:10px;cursor:pointer}
+    .seg.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+    .drawer-footer{padding:12px 14px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+    .list{display:grid;gap:8px}
+    .item{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border);background:#0b1220;border-radius:10px;padding:8px 10px}
+    .item .meta{display:flex;flex-direction:column;gap:2px}
+    .item .actions{display:flex;gap:6px}
+    .tag{font-size:11px;color:#cbd5e1;background:#0b1220;border:1px solid #23314a;border-radius:999px;padding:2px 6px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="titlebar">
+      <h1>بازی شعرسازی • مصراع + معنی لغات</h1>
+      <button class="btn" id="open-settings" title="تنظیمات و افزودن">تنظیمات</button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="misra">بازی مصراع</button>
+      <button class="tab-btn" data-tab="vocab">معنی لغات (۴ گزینه‌ای)</button>
+    </div>
+
+    <!-- Panel: Misra Game -->
+    <div class="panel" id="panel-misra">
+      <div class="topbar">
+        <div class="row">
+          <span>مرحله: <span id="round">1</span>/<span id="total">—</span></span>
+          <span class="muted">کلمات مصراع را درست بچینید. ۵ شانس دارید.</span>
+        </div>
+        <div class="lives" id="lives"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="header-line">کلمات درهم‌ریخته</div>
+      <div id="tiles" class="tiles"></div>
+
+      <div class="header-line" style="margin-top:10px">پاسخ شما</div>
+      <div id="slots" class="slots"></div>
+
+      <div class="footer">
+        <div class="controls">
+          <button class="btn" id="btn-shuffle">درهم‌ریزی</button>
+          <button class="btn" id="btn-clear">پاک‌سازی</button>
+          <button class="btn" id="btn-hint">کمک (−۱ شانس)</button>
+          <button class="btn primary" id="btn-check">بررسی</button>
+          <button class="btn ghost" id="btn-next" disabled>مصراع بعدی</button>
+        </div>
+        <div id="status" class="status hint">با «کمک» یک کلمهٔ درست افزوده می‌شود و ۱ شانس کم می‌شود.</div>
+      </div>
+
+      <p class="hint small" style="margin-top:10px">
+        راهنما: روی هر کلمه کلیک کنید تا به پاسخ افزوده شود. برای برگشت، روی آخرین کلمهٔ پاسخ کلیک کنید.
+      </p>
+    </div>
+
+    <!-- Panel: Vocab MCQ -->
+    <div class="panel" id="panel-vocab" style="display:none">
+      <div class="topbar">
+        <div class="row">
+          <span>سؤال: <span id="q-index">1</span>/<span id="q-total">—</span></span>
+          <span>امتیاز: <span class="score" id="score">0</span></span>
+        </div>
+        <div class="muted">از هر واژه، معنی درست را از میان چهار گزینه انتخاب کنید.</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="qbox">
+        <div class="header-line" id="q-term">—</div>
+        <div class="choices" id="q-choices"></div>
+      </div>
+
+      <div class="footer">
+        <div class="controls">
+          <button class="btn" id="q-skip">بعدی</button>
+        </div>
+        <div id="q-status" class="status hint">برای پاسخ، روی یکی از گزینه‌ها کلیک کنید.</div>
+      </div>
+
+      
+    </div>
+  </div>
+
+  <!-- Single plus action -->
+  <div class="side-actions">
+    <button class="fab" id="open-drawer" title="افزودن (+)">
+      <span class="icon">＋</span>
+    </button>
+  </div>
+
+  <!-- Drawer -->
+  <div class="drawer-overlay" id="drawer-overlay"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="segmented" role="tablist">
+        <div class="seg active" data-mode="vocab" id="seg-vocab">افزودن واژه</div>
+        <div class="seg" data-mode="misra" id="seg-misra">افزودن مصراع</div>
+        <div class="seg" data-mode="manage" id="seg-manage">مدیریت</div>
+      </div>
+      <button class="btn ghost" id="drawer-close">بستن</button>
+    </div>
+    <div class="drawer-body">
+      <!-- Vocab form -->
+      <div id="form-vocab">
+        <div class="field">
+          <label>واژه</label>
+          <input type="text" id="in-term" placeholder="مثلاً: خشت">
+        </div>
+        <div class="field">
+          <label>معنی</label>
+          <input type="text" id="in-meaning" placeholder="مثلاً: آجر خام">
+        </div>
+        <div class="field">
+          <label>گزینهٔ غلط ۱ (اختیاری)</label>
+          <input type="text" id="in-wrong1" placeholder="مثلاً: سنگ قیمتی">
+        </div>
+        <div class="field">
+          <label>گزینهٔ غلط ۲ (اختیاری)</label>
+          <input type="text" id="in-wrong2" placeholder="مثلاً: صدای ضعیف">
+        </div>
+        <div class="field">
+          <label>گزینهٔ غلط ۳ (اختیاری)</label>
+          <input type="text" id="in-wrong3" placeholder="مثلاً: اجازه عبور">
+        </div>
+        <div class="hint">اگر ۳ گزینهٔ غلط را بدهید، دقیقاً همان‌ها استفاده می‌شود.</div>
+      </div>
+
+      <!-- Misra form -->
+      <div id="form-misra" style="display:none">
+        <div class="field">
+          <label>متن مصراع</label>
+          <textarea id="in-misra" placeholder="مثلاً: خانه‌ای دارد میان ابرها"></textarea>
+        </div>
+        <div class="hint">پس از ذخیره، به مراحل بازی مصراع افزوده می‌شود.</div>
+      </div>
+
+      <!-- Manage -->
+      <div id="form-manage" style="display:none">
+        <div class="header-line">واژه‌های افزوده‌شده</div>
+        <div id="list-vocab" class="list"></div>
+        <div class="divider"></div>
+        <div class="header-line">مصراع‌های افزوده‌شده</div>
+        <div id="list-misra" class="list"></div>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn" id="drawer-cancel">انصراف</button>
+      <button class="btn primary" id="drawer-save">ذخیره</button>
+    </div>
+  </div>
+
+  <script>
+    /* ========= Utilities ========= */
+    const byId = (id)=>document.getElementById(id);
+    const shuffleArray = (arr)=>{ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; };
+    function normalizeText(t){
+      return t
+        .replaceAll(/[«»"،؛\.,!\?\(\)\[\]{}\-–—_:؛٬،]/g," ")
+        .replaceAll(/\u064A/g,"ی").replaceAll(/\u0643/g,"ک")
+        .replaceAll(/\s+/g," ").trim();
+    }
+    const genId = ()=> String(Date.now()) + "-" + Math.random().toString(36).slice(2,8);
+
+    /* ========= Misra Game Data ========= */
+    const RAW_TEXT = `
+پیش از اینها، فکر می‌کردم خدا ◈※◈ خانه‌ای دارد میان ابرها
+مثل قصر پادشاه قصّه‌ها ◈※◈ خشتی از الماس و خشتی از طلا
+پایه‌های برجش از عاج و بلور ◈※◈ بر سر تختی نشسته با غرور
+ماه، برق کوچکی از تاج او ◈※◈ هر ستاره، پولکی از تاج او
+رعد و برق شب، طنین خنده‌اش ◈※◈ سیل و طوفان، نعره توفنده‌اش
+هیچ کس از جای او آگاه نیست ◈※◈ هیچ کس را در حضورش راه نیست
+آن خدا بی‌رحم بود و خشمگین ◈※◈ خانه‌اش در آسمان، دور از زمین
+بود، امّا در میان ما نبود ◈※◈ مهربان و ساده و زیبا نبود
+در دل او، دوستی جایی نداشت ◈※◈ مهربانی هیچ معنایی نداشت
+هر چه می‌پرسیدم از خود از خدا ◈※◈ از زمین از آسمان از ابرها
+زود می‌گفتند: «این، کار خداست ◈※◈ پرس‌وجو از کار او کاری خطاست»
+نیّت من در نماز و در دعا ◈※◈ ترس بود و وحشت از خشم خدا
+پیش از اینها، خاطرم دلگیر بود ◈※◈ از خدا در ذهنم این تصویر بود
+تا که یک شب، دست در دست پدر ◈※◈ راه افتادم به قصد یک سفر
+در میان راه، در یک روستا ◈※◈ خانه‌ای دیدیم، خوب و آشنا
+زود پرسیدم: «پدر، اینجا کجاست؟» ◈※◈ گفت: «اینجا خانه خوب خداست»
+گفت: «اینجا می‌شود یک لحظه ماند ◈※◈ گوشه‌ای خلوت، نمازی ساده خواند
+با وضویی دست و رویی تازه کرد ◈※◈ با دل خود گفت‌وگویی تازه کرد»
+گفتمش: «پس آن خدای خشمگین ◈※◈ خانه‌اش اینجاست؟ اینجا در زمین؟»
+گفت: «آری خانه او بی‌ریاست ◈※◈ فرش‌هایش از گلیم و بوریاست
+مهربان و ساده و بی‌کینه است ◈※◈ مثل نوری در دل آیینه است
+عادت او نیست خشم و دشمنی ◈※◈ نام او نور و نشانش روشنی»
+تازه فهمیدم: خدایم این خداست ◈※◈ این خدای مهربان و آشناست
+دوستی از من به من نزدیک‌تر ◈※◈ از رگ گردن به من نزدیک‌تر
+می‌توانم بعد از این، با این خدا ◈※◈ دوست باشم، دوست، پاک و بی‌ریا
+`.trim();
+
+    const LS_MISRAS = "poem_misras_v1";
+    const builtInHemistichs = RAW_TEXT.split(/\n+/).map(l=>l.trim()).filter(Boolean).flatMap(line => line.split("◈※◈").map(s => s.trim()));
+    let customHemistichs = JSON.parse(localStorage.getItem(LS_MISRAS) || "[]"); // [{id,text}]
+    let hemistichs = builtInHemistichs.concat(customHemistichs.map(x=>x.text));
+
+    /* ========= Misra Game ========= */
+    const game = { total: hemistichs.length, index: 0, attemptsLeft: 5, targetRaw: "", targetTokens: [], choiceTokens: [], usedMask: [] };
+    const elRound=byId("round"), elTotal=byId("total"), elLives=byId("lives");
+    const elTiles=byId("tiles"), elSlots=byId("slots"), elStatus=byId("status");
+    const btnShuffle=byId("btn-shuffle"), btnClear=byId("btn-clear"), btnHint=byId("btn-hint"), btnCheck=byId("btn-check"), btnNext=byId("btn-next");
+
+    elTotal.textContent=String(game.total);
+    startRound(0);
+
+    function startRound(idx){
+      game.index = ((idx % game.total) + game.total) % game.total;
+      game.attemptsLeft = 5;
+      game.targetRaw = hemistichs[game.index];
+      game.targetTokens = normalizeText(game.targetRaw).split(" ");
+      game.choiceTokens = shuffleArray(game.targetTokens);
+      game.usedMask = new Array(game.choiceTokens.length).fill(false);
+
+      elRound.textContent = String(game.index+1);
+      renderLives(); renderTiles(); renderSlots([]);
+      setStatus("با «کمک» یک کلمهٔ درست افزوده می‌شود و ۱ شانس کم می‌شود.", "hint");
+      setEnabled(true); btnNext.disabled = true;
+    }
+    function renderLives(){ elLives.innerHTML=""; for(let i=0;i<5;i++){ const h=document.createElement("div"); h.className="heart"+(i<game.attemptsLeft?" full":""); elLives.appendChild(h); } }
+    function renderTiles(){
+      elTiles.innerHTML="";
+      game.choiceTokens.forEach((tok,i)=>{
+        const b=document.createElement("button");
+        b.className="tile"+(game.usedMask[i]?" used":""); b.textContent=tok;
+        b.addEventListener("click",()=>{ if(game.usedMask[i])return; pickToken(i); });
+        elTiles.appendChild(b);
+      });
+    }
+    function currentAnswerTokens(){ return Array.from(elSlots.querySelectorAll(".slot")).map(s=>s.textContent).filter(Boolean); }
+    function renderSlots(tokens){
+      elSlots.innerHTML=""; const total=game.targetTokens.length;
+      for(let i=0;i<total;i++){ const s=document.createElement("div"); s.className="slot"; s.textContent=tokens[i]||""; elSlots.appendChild(s); }
+      elSlots.addEventListener("click", onSlotsClick, { once:true });
+    }
+    function onSlotsClick(){ const tokens=currentAnswerTokens(); if(tokens.length===0) return; const last=tokens[tokens.length-1];
+      for(let i=game.choiceTokens.length-1;i>=0;i--){ if(game.usedMask[i] && game.choiceTokens[i]===last){ game.usedMask[i]=false; break; } }
+      tokens.pop(); renderTiles(); renderSlots(tokens);
+    }
+    function pickToken(i){ const tokens=currentAnswerTokens(); tokens.push(game.choiceTokens[i]); game.usedMask[i]=true; renderTiles(); renderSlots(tokens); }
+    function checkAnswer(){
+      const userTokens=currentAnswerTokens();
+      if(userTokens.length!==game.targetTokens.length){ setStatus("تعداد کلمات کامل نیست.", "warn"); return; }
+      const correct = normalizeText(userTokens.join(" "))===normalizeText(game.targetTokens.join(" "));
+      if(correct){ setStatus("عالی! پاسخ درست است.", "good"); setEnabled(false); btnNext.disabled=false; }
+      else{
+        game.attemptsLeft=Math.max(0,game.attemptsLeft-1); renderLives();
+        if(game.attemptsLeft===0){ setStatus(`فرصت‌ها تمام شد. پاسخ درست نمایش داده شد.`, "bad"); revealAnswer(); setEnabled(false); btnNext.disabled=false; }
+        else setStatus(`نادرست. باقی‌مانده: ${game.attemptsLeft}`, "bad");
+      }
+    }
+    function hintOnce(){
+      if(btnHint.disabled) return;
+      const built=currentAnswerTokens(); const pos=built.length;
+      if(pos>=game.targetTokens.length){ checkAnswer(); return; }
+      const need=game.targetTokens[pos];
+      let chosenIndex=-1;
+      for(let i=0;i<game.choiceTokens.length;i++){ if(!game.usedMask[i] && game.choiceTokens[i]===need){ chosenIndex=i; break; } }
+      if(chosenIndex!==-1){ pickToken(chosenIndex); }
+      game.attemptsLeft=Math.max(0,game.attemptsLeft-1); renderLives();
+      if(currentAnswerTokens().length===game.targetTokens.length){ checkAnswer(); return; }
+      if(game.attemptsLeft===0){ setStatus(`فرصت‌ها تمام شد. پاسخ درست نمایش داده شد.`, "bad"); revealAnswer(); setEnabled(false); btnNext.disabled=false; }
+      else setStatus(`کمک اعمال شد. باقی‌مانده: ${game.attemptsLeft}`, "warn");
+    }
+    function revealAnswer(){ renderSlots(game.targetTokens.slice()); game.usedMask = game.usedMask.map(()=>true); renderTiles(); }
+    function clearAnswer(){ game.usedMask=game.usedMask.map(()=>false); renderTiles(); renderSlots([]); setStatus("پاک شد.", "hint"); }
+    function shuffleTiles(){ game.choiceTokens=shuffleArray(game.choiceTokens); game.usedMask=game.usedMask.map(()=>false); renderTiles(); renderSlots([]); setStatus("کلمات درهم‌ریخت.", "hint"); }
+    function setStatus(text, kind){ elStatus.className="status "+(kind==="good"?"good":kind==="bad"?"bad":kind==="warn"?"warn":"hint"); elStatus.textContent=text; }
+    function setEnabled(enabled){ btnCheck.disabled=!enabled; btnShuffle.disabled=!enabled; btnClear.disabled=!enabled; btnHint.disabled=!enabled; }
+    btnCheck.addEventListener("click", checkAnswer);
+    btnClear.addEventListener("click", clearAnswer);
+    btnShuffle.addEventListener("click", shuffleTiles);
+    btnHint.addEventListener("click", hintOnce);
+    btnNext.addEventListener("click", ()=> startRound(game.index+1));
+    document.addEventListener("keydown",(e)=>{ if(e.key==="Enter") checkAnswer(); if(e.key==="Escape") clearAnswer(); if(e.key?.toLowerCase?.()==="n") btnNext.click(); if(e.key?.toLowerCase?.()==="s") shuffleTiles(); if(e.key?.toLowerCase?.()==="h") hintOnce(); });
+
+    /* ========= Vocab Data (default + custom with wrong options) ========= */
+    const LS_VOCAB = "vocab_pairs_v2";
+    const defaultVocab = [
+      { term: "خشت", meaning: "اجر خام" },
+      { term: "طنین", meaning: "بازگشت صدا" },
+      { term: "راه", meaning: "اجازه ورود" },
+      { term: "بوریا", meaning: "حصیری از نی" },
+      { term: "برج", meaning: "ساختمان بلند" },
+      { term: "نعره", meaning: "فریاد" },
+      { term: "بود", meaning: "وجود داشت" },
+      { term: "عاج", meaning: "دندان فیل" },
+      { term: "توفنده اش", meaning: "پر خروش" },
+      { term: "نیت", meaning: "قصد" },
+      { term: "بی ریا", meaning: "بدون خودنمایی" },
+    ];
+    let customVocab = JSON.parse(localStorage.getItem(LS_VOCAB) || "[]"); // [{id,term,meaning,wrong?:[]}]
+    let VOCAB = defaultVocab.concat(customVocab.map(({term,meaning,wrong})=>({term,meaning,wrong})));
+
+    /* ========= Vocab Quiz ========= */
+    const elQIndex=byId("q-index"), elQTotal=byId("q-total"), elQTerm=byId("q-term"), elQChoices=byId("q-choices"), elQStatus=byId("q-status");
+    const btnQNext=byId("q-skip"), elScore=byId("score");
+    const quiz = { order: [], idx: 0, score: 0, locked: false };
+
+    function initQuiz(){
+      VOCAB = defaultVocab.concat(customVocab.map(({term,meaning,wrong})=>({term,meaning,wrong})));
+      quiz.order = shuffleArray(VOCAB.map((_,i)=>i));
+      quiz.idx = 0; quiz.score = 0;
+      elScore.textContent = "0";
+      quiz.locked = false;
+      elQTotal.textContent = String(VOCAB.length);
+      renderQuestion();
+    }
+    function renderQuestion(){
+      if(quiz.idx >= quiz.order.length){
+        elQTerm.textContent = "پایان! همه سؤالات تمام شد.";
+        elQChoices.innerHTML = "";
+        elQStatus.className="status good";
+        elQStatus.textContent = "آفرین! با «بعدی» دوباره شروع کنید.";
+        btnQNext.textContent = "شروع دوباره";
+        return;
+      }
+      btnQNext.textContent = "بعدی";
+      const i = quiz.order[quiz.idx];
+      const pair = VOCAB[i];
+      elQIndex.textContent = String(quiz.idx+1);
+      elQTerm.textContent = `معنی «${pair.term}» کدام است؟`;
+      elQStatus.className="status hint";
+      elQStatus.textContent="روی یکی از گزینه‌ها کلیک کنید.";
+
+      const options = buildChoices(i);
+      elQChoices.innerHTML = "";
+      options.forEach(opt=>{
+        const b=document.createElement("button");
+        b.className="choice";
+        b.textContent=opt.text;
+        b.addEventListener("click", ()=>{
+          if(quiz.locked) return;
+          quiz.locked = true;
+          const correct = opt.correct;
+          if(correct){
+            b.classList.add("correct");
+            elQStatus.className="status good";
+            elQStatus.textContent="درست!";
+            quiz.score += 1;
+            elScore.textContent = String(quiz.score);
+          }else{
+            b.classList.add("wrong");
+            elQStatus.className="status bad";
+            elQStatus.textContent="نادرست.";
+          }
+          Array.from(elQChoices.children).forEach(ch=>{ ch.classList.add("used"); ch.disabled = true; });
+          setTimeout(()=>{ quiz.idx += 1; quiz.locked = false; renderQuestion(); }, 650);
+        });
+        elQChoices.appendChild(b);
+      });
+    }
+    function buildChoices(correctIndex){
+      const correct = VOCAB[correctIndex];
+      let wrongs = Array.isArray(correct.wrong) ? correct.wrong.filter(Boolean) : [];
+      wrongs = shuffleArray(wrongs).slice(0,3);
+      if(wrongs.length < 3){
+        const pool = VOCAB.map(p=>p.meaning).filter(m=>m!==correct.meaning && !wrongs.includes(m));
+        wrongs = wrongs.concat(shuffleArray(pool).slice(0, 3 - wrongs.length));
+      }
+      const all = [{ text: correct.meaning, correct: true }].concat(wrongs.map(d=>({ text:d, correct:false })));
+      return shuffleArray(all);
+    }
+    btnQNext.addEventListener("click", ()=>{
+      if(quiz.idx >= quiz.order.length){ initQuiz(); return; }
+      quiz.idx += 1;
+      renderQuestion();
+    });
+    initQuiz();
+
+    
+
+    /* ========= Tabs ========= */
+    const tabButtons = document.querySelectorAll(".tab-btn");
+    const panelMisra = byId("panel-misra");
+    const panelVocab = byId("panel-vocab");
+    tabButtons.forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        tabButtons.forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        const t = btn.dataset.tab;
+        panelMisra.style.display = (t==="misra") ? "" : "none";
+        panelVocab.style.display = (t==="vocab") ? "" : "none";
+      });
+    });
+
+    /* ========= Drawer (Add / Edit / Manage) ========= */
+    const drawer = byId("drawer");
+    const overlay = byId("drawer-overlay");
+    const segVocab = byId("seg-vocab");
+    const segMisra = byId("seg-misra");
+    const segManage = byId("seg-manage");
+    const formVocab = byId("form-vocab");
+    const formMisra = byId("form-misra");
+    const formManage = byId("form-manage");
+    const listVocab = byId("list-vocab");
+    const listMisra = byId("list-misra");
+    const btnClose = byId("drawer-close");
+    const btnCancel = byId("drawer-cancel");
+    const btnSave = byId("drawer-save");
+    const inTerm = byId("in-term");
+    const inMeaning = byId("in-meaning");
+    const inW1 = byId("in-wrong1");
+    const inW2 = byId("in-wrong2");
+    const inW3 = byId("in-wrong3");
+    const inMisra = byId("in-misra");
+
+    let drawerMode = "vocab";
+    let editingVocabId = null;
+
+    function openDrawer(mode){
+      setMode(mode || "vocab");
+      overlay.style.display = "block";
+      requestAnimationFrame(()=> drawer.classList.add("open"));
+      if(drawerMode==="vocab"){ inTerm.focus(); }
+      else if(drawerMode==="misra"){ inMisra.focus(); }
+      else { renderManage(); }
+    }
+    function closeDrawer(){
+      drawer.classList.remove("open");
+      overlay.style.display = "none";
+      clearForms();
+      editingVocabId = null;
+    }
+    function setMode(mode){
+      drawerMode = mode;
+      segVocab.classList.toggle("active", mode==="vocab");
+      segMisra.classList.toggle("active", mode==="misra");
+      segManage.classList.toggle("active", mode==="manage");
+      formVocab.style.display = (mode==="vocab") ? "" : "none";
+      formMisra.style.display = (mode==="misra") ? "" : "none";
+      formManage.style.display = (mode==="manage") ? "" : "none";
+    }
+    function clearForms(){
+      inTerm.value = ""; inMeaning.value = "";
+      inW1.value = ""; inW2.value = ""; inW3.value = "";
+      inMisra.value = "";
+    }
+
+    byId("open-drawer").addEventListener("click", ()=> openDrawer("vocab"));
+    btnClose.addEventListener("click", closeDrawer);
+    btnCancel.addEventListener("click", closeDrawer);
+    overlay.addEventListener("click", closeDrawer);
+    segVocab.addEventListener("click", ()=> setMode("vocab"));
+    segMisra.addEventListener("click", ()=> setMode("misra"));
+    segManage.addEventListener("click", ()=> { setMode("manage"); renderManage(); });
+
+    // دکمه تنظیمات: بازکردن دراور کنار صفحه
+    const btnOpenSettings = byId("open-settings");
+    if (btnOpenSettings) {
+      btnOpenSettings.addEventListener("click", ()=> openDrawer("manage"));
+    }
+    // Deep-link: index.html#settings=vocab|misra|manage
+    (function deepLinkFromHash(){
+      const m = location.hash.match(/settings=(vocab|misra|manage)/);
+      if (m) openDrawer(m[1]);
+    })();
+
+    function renderManage(){
+      // custom vocab list
+      listVocab.innerHTML = "";
+      if(customVocab.length===0){
+        listVocab.innerHTML = '<div class="hint">موردی اضافه نشده است.</div>';
+      }else{
+        customVocab.forEach(v=>{
+          const row = document.createElement("div");
+          row.className = "item";
+          const meta = document.createElement("div");
+          meta.className = "meta";
+          meta.innerHTML = `<div><strong>${v.term}</strong> — ${v.meaning}</div>` +
+            (v.wrong && v.wrong.length ? `<div class="hint">گزینه‌های غلط: ${v.wrong.join("، ")}</div>` : "");
+          const actions = document.createElement("div");
+          actions.className = "actions";
+          const btnEdit = document.createElement("button");
+          btnEdit.className = "btn";
+          btnEdit.textContent = "ویرایش";
+          btnEdit.addEventListener("click", ()=>{
+            setMode("vocab");
+            inTerm.value = v.term;
+            inMeaning.value = v.meaning;
+            inW1.value = v.wrong?.[0] || "";
+            inW2.value = v.wrong?.[1] || "";
+            inW3.value = v.wrong?.[2] || "";
+            editingVocabId = v.id;
+          });
+          const btnDel = document.createElement("button");
+          btnDel.className = "btn";
+          btnDel.textContent = "حذف";
+          btnDel.addEventListener("click", ()=>{
+            if(!confirm("حذف این واژه؟")) return;
+            customVocab = customVocab.filter(x=>x.id!==v.id);
+            localStorage.setItem(LS_VOCAB, JSON.stringify(customVocab));
+            initQuiz();
+            renderManage();
+          });
+          actions.appendChild(btnEdit);
+          actions.appendChild(btnDel);
+          row.appendChild(meta);
+          row.appendChild(actions);
+          listVocab.appendChild(row);
+        });
+      }
+      // custom misra list
+      listMisra.innerHTML = "";
+      if(customHemistichs.length===0){
+        listMisra.innerHTML = '<div class="hint">موردی اضافه نشده است.</div>';
+      }else{
+        customHemistichs.forEach(m=>{
+          const row = document.createElement("div");
+          row.className = "item";
+          const meta = document.createElement("div");
+          meta.className = "meta";
+          meta.innerHTML = `<div>${m.text}</div>`;
+          const actions = document.createElement("div");
+          actions.className = "actions";
+          const btnDel = document.createElement("button");
+          btnDel.className = "btn";
+          btnDel.textContent = "حذف";
+          btnDel.addEventListener("click", ()=>{
+            if(!confirm("حذف این مصراع؟")) return;
+            customHemistichs = customHemistichs.filter(x=>x.id!==m.id);
+            localStorage.setItem(LS_MISRAS, JSON.stringify(customHemistichs));
+            hemistichs = builtInHemistichs.concat(customHemistichs.map(x=>x.text));
+            game.total = hemistichs.length;
+            byId("total").textContent = String(game.total);
+            renderManage();
+          });
+          actions.appendChild(btnDel);
+          row.appendChild(meta);
+          row.appendChild(actions);
+          listMisra.appendChild(row);
+        });
+      }
+    }
+
+    btnSave.addEventListener("click", ()=>{
+      if(drawerMode==="vocab"){
+        const term = inTerm.value.trim();
+        const meaning = inMeaning.value.trim();
+        const wrong = [inW1.value.trim(), inW2.value.trim(), inW3.value.trim()].filter(Boolean);
+        if(!term || !meaning){ alert("واژه و معنی را کامل وارد کنید."); return; }
+        if(editingVocabId){
+          const idx = customVocab.findIndex(x=>x.id===editingVocabId);
+          if(idx>=0){
+            customVocab[idx].term = term;
+            customVocab[idx].meaning = meaning;
+            customVocab[idx].wrong = wrong;
+          }
+        }else{
+          const exists = defaultVocab.concat(customVocab).some(v => v.term===term && v.meaning===meaning);
+          if(exists){ alert("این جفت واژه/معنی قبلاً وجود دارد."); return; }
+          customVocab.push({ id: genId(), term, meaning, wrong });
+        }
+        localStorage.setItem(LS_VOCAB, JSON.stringify(customVocab));
+        initQuiz();
+        alert("ذخیره شد.");
+        setMode("manage");
+        renderManage();
+      }else if(drawerMode==="misra"){
+        const misra = inMisra.value.trim();
+        if(!misra){ alert("مصراع را وارد کنید."); return; }
+        customHemistichs.push({ id: genId(), text: misra });
+        localStorage.setItem(LS_MISRAS, JSON.stringify(customHemistichs));
+        hemistichs = builtInHemistichs.concat(customHemistichs.map(x=>x.text));
+        game.total = hemistichs.length;
+        byId("total").textContent = String(game.total);
+        inMisra.value = "";
+        alert("ذخیره شد.");
+        setMode("manage");
+        renderManage();
+      }else{
+        closeDrawer();
+      }
+    });
+  </script>
+</body>
+</html>
